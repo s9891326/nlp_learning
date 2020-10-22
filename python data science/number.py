@@ -8,13 +8,14 @@ from sklearn.manifold import Isomap
 from sklearn.model_selection import train_test_split, cross_val_score, LeaveOneOut, validation_curve
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.preprocessing import PolynomialFeatures, Imputer
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import make_pipeline
 
 
-# digits = load_digits()
-# print(digits.images.shape)
+digits = load_digits()
+print(digits.images.shape)
 
 
 """show picture"""
@@ -40,6 +41,7 @@ from sklearn.pipeline import make_pipeline
 # iso = Isomap(n_components=2)
 # iso.fit(X)
 # data_projected = iso.transform(X)
+# data_projected = iso.fit_transform(X)
 # print(data_projected.shape)
 
 """show dimensionality reduction picture"""
@@ -211,28 +213,30 @@ def make_data(N, err=1.0, rseed=1):
 
 """imputation missing data"""
 # 藉由imputer 解決缺失的資料(nan)
-x = np.array([[np.nan, 0, 3],
-              [3, 7, 9],
-              [3, 5, 2],
-              [4, np.nan, 6],
-              [8, 8, 1]])
-y = np.array([14, 16, -1, 8, -5])
-
-imp = Imputer(strategy="mean")
-x2 = imp.fit_transform(x)
-
-model = LinearRegression().fit(x2, y)
-y2 = model.predict(x2)
-print(y2)
+# x = np.array([[np.nan, 0, 3],
+#               [3, 7, 9],
+#               [3, 5, 2],
+#               [4, np.nan, 6],
+#               [8, 8, 1]])
+# y = np.array([14, 16, -1, 8, -5])
+#
+# imp = SimpleImputer(strategy="mean")
+# print(f"x: {x}")
+# x2 = imp.fit_transform(x)
+# print(f"x2: {x2}")
+#
+# model = LinearRegression().fit(x2, y)
+# y2 = model.predict(x2)
+# print(y2)
 
 """pipeline features"""
 # 1. 使用平均值替補缺失資料
 # 2. 轉換特徵成為二階方程式
 # 3. 擬和線性迴歸
 # 將自動套用，形成並行的管線
-model = make_pipeline(Imputer(strategy="mean"),
-                      PolynomialFeatures(degree=2),
-                      LinearRegression())
-model.fit(x, y)
-print(y)
-print(model.predict(x))
+# model = make_pipeline(Imputer(strategy="mean"),
+#                       PolynomialFeatures(degree=2),
+#                       LinearRegression())
+# model.fit(x, y)
+# print(y)
+# print(model.predict(x))
