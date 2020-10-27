@@ -31,13 +31,14 @@ corpus = [
 ]
 
 
-class CBOW(keras.Model):
+class SkipGram(keras.Model):
     def __init__(self, v_dim, emb_dim):
         super().__init__()
         self.v_dim = v_dim
         self.embeddings = keras.layers.Embedding(
             input_dim=v_dim, output_dim=emb_dim,  #[n_vocab, emb_dim]
-            embeddings_initializer=keras.initializers.RandomNormal(0., 0.1))
+            embeddings_initializer=keras.initializers.RandomNormal(0., 0.1),
+        )
 
         # noise-contrastive estimation
         self.nce_w = self.add_weight(
@@ -52,7 +53,6 @@ class CBOW(keras.Model):
     def call(self, inputs, training=None, mask=None):
         # x.shape = [n, skip_window * 2]
         o = self.embeddings(inputs)  # [n, skip_window*2, emb_dim]
-        o = tf.reduce_mean(o, axis=1)  # [n, emb_dim]
         return o
 
     # negative sampling: take one positive label and num_sampled negative labels to compute the loss
@@ -81,9 +81,9 @@ def train(model, data):
 
 
 if __name__ == '__main__':
-    d = process_w2v_data(corpus=corpus, skip_window=2, method="cbow")
-    m = CBOW(d.num_word, 2)
+    d = process_w2v_data(corpus=corpus, skip_window=2, method="skip_gram")
+    m = SkipGram(d.num_word, 2)
     train(m, d)
 
     # plotting
-    show_w2v_word_embedding(m, d, "visual/cbow.png")
+    show_w2v_word_embedding(m, d, "visual/skip_gram.png")

@@ -2,3 +2,4 @@ venv
 bertviz_repo
 *.csv
 *.tsv
+mofanpy/__pycache__
