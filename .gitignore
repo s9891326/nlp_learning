@@ -3,3 +3,4 @@ bertviz_repo
 *.csv
 *.tsv
 mofanpy/__pycache__
+.idea
