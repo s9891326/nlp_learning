@@ -4,3 +4,4 @@ bertviz_repo
 *.tsv
 mofanpy/__pycache__
 .idea
+mofanpy/attention_align.pkl

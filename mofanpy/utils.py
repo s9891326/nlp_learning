@@ -1,6 +1,10 @@
-import datetime
-import itertools
 import numpy as np
+import datetime
+import os
+import requests
+import pandas as pd
+import re
+import itertools
 
 PAD_ID = 0
 
@@ -49,6 +53,139 @@ class DateData:
     @property
     def num_word(self):
         return len(self.vocab)
+
+
+def pad_zero(seqs, max_len):
+    padded = np.full((len(seqs), max_len), fill_value=PAD_ID, dtype=np.int32)
+    for i, seq in enumerate(seqs):
+        padded[i, :len(seq)] = seq
+    return padded
+
+
+def maybe_download_mrpc(save_dir="./MRPC/", proxy=None):
+    train_url = 'https://mofanpy.com/static/files/MRPC/msr_paraphrase_train.txt'
+    test_url = 'https://mofanpy.com/static/files/MRPC/msr_paraphrase_test.txt'
+    os.makedirs(save_dir, exist_ok=True)
+    proxies = {"http": proxy, "https": proxy}
+    for url in [train_url, test_url]:
+        raw_path = os.path.join(save_dir, url.split("/")[-1])
+        if not os.path.isfile(raw_path):
+            print("downloading from %s" % url)
+            r = requests.get(url, proxies=proxies)
+            with open(raw_path, "w", encoding="utf-8") as f:
+                f.write(r.text.replace('"', "<QUOTE>"))
+                print("completed")
+
+
+def _text_standardize(text):
+    text = re.sub(r'—', '-', text)
+    text = re.sub(r'–', '-', text)
+    text = re.sub(r'―', '-', text)
+    text = re.sub(r" \d+(,\d+)?(\.\d+)? ", " <NUM> ", text)
+    text = re.sub(r" \d+-+?\d*", " <NUM>-", text)
+    return text.strip()
+
+
+def _process_mrpc(dir="./MRPC", rows=None):
+    data = {"train": None, "test": None}
+    files = os.listdir(dir)
+    for f in files:
+        df = pd.read_csv(os.path.join(dir, f), sep='\t', nrows=rows)
+        k = "train" if "train" in f else "test"
+        data[k] = {"is_same": df.iloc[:, 0].values, "s1": df["#1 String"].values, "s2": df["#2 String"].values}
+    vocab = set()
+    for n in ["train", "test"]:
+        for m in ["s1", "s2"]:
+            for i in range(len(data[n][m])):
+                data[n][m][i] = _text_standardize(data[n][m][i].lower())
+                cs = data[n][m][i].split(" ")
+                vocab.update(set(cs))
+    v2i = {v: i for i, v in enumerate(sorted(vocab), start=1)}
+    v2i["<PAD>"] = PAD_ID
+    v2i["<MASK>"] = len(v2i)
+    v2i["<SEP>"] = len(v2i)
+    v2i["<GO>"] = len(v2i)
+    i2v = {i: v for v, i in v2i.items()}
+    for n in ["train", "test"]:
+        for m in ["s1", "s2"]:
+            data[n][m + "id"] = [[v2i[v] for v in c.split(" ")] for c in data[n][m]]
+    return data, v2i, i2v
+
+
+class MRPCData:
+    num_seg = 3
+    pad_id = PAD_ID
+
+    def __init__(self, data_dir="./MRPC/", rows=None, proxy=None):
+        maybe_download_mrpc(save_dir=data_dir, proxy=proxy)
+        data, self.v2i, self.i2v = _process_mrpc(data_dir, rows)
+        self.max_len = max(
+            [len(s1) + len(s2) + 3 for s1, s2 in zip(
+                data["train"]["s1id"] + data["test"]["s1id"], data["train"]["s2id"] + data["test"]["s2id"])])
+
+        self.xlen = np.array([
+            [
+                len(data["train"]["s1id"][i]), len(data["train"]["s2id"][i])
+            ] for i in range(len(data["train"]["s1id"]))], dtype=int)
+        x = [
+            [self.v2i["<GO>"]] + data["train"]["s1id"][i] + [self.v2i["<SEP>"]] + data["train"]["s2id"][i] + [
+                self.v2i["<SEP>"]]
+            for i in range(len(self.xlen))
+        ]
+        self.x = pad_zero(x, max_len=self.max_len)
+        self.nsp_y = data["train"]["is_same"][:, None]
+
+        self.seg = np.full(self.x.shape, self.num_seg - 1, np.int32)
+        for i in range(len(x)):
+            si = self.xlen[i][0] + 2
+            self.seg[i, :si] = 0
+            si_ = si + self.xlen[i][1] + 1
+            self.seg[i, si:si_] = 1
+
+        self.word_ids = np.array(list(set(self.i2v.keys()).difference(
+            [self.v2i[v] for v in ["<PAD>", "<MASK>", "<SEP>"]])))
+
+    def sample(self, n):
+        bi = np.random.randint(0, self.x.shape[0], size=n)
+        bx, bs, bl, by = self.x[bi], self.seg[bi], self.xlen[bi], self.nsp_y[bi]
+        return bx, bs, bl, by
+
+    @property
+    def num_word(self):
+        return len(self.v2i)
+
+    @property
+    def mask_id(self):
+        return self.v2i["<MASK>"]
+
+
+class MRPCSingle:
+    pad_id = PAD_ID
+
+    def __init__(self, data_dir="./MRPC/", rows=None, proxy=None):
+        maybe_download_mrpc(save_dir=data_dir, proxy=proxy)
+        data, self.v2i, self.i2v = _process_mrpc(data_dir, rows)
+
+        self.max_len = max([len(s) + 2 for s in data["train"]["s1id"] + data["train"]["s2id"]])
+        x = [
+            [self.v2i["<GO>"]] + data["train"]["s1id"][i] + [self.v2i["<SEP>"]]
+            for i in range(len(data["train"]["s1id"]))
+        ]
+        x += [
+            [self.v2i["<GO>"]] + data["train"]["s2id"][i] + [self.v2i["<SEP>"]]
+            for i in range(len(data["train"]["s2id"]))
+        ]
+        self.x = pad_zero(x, max_len=self.max_len)
+        self.word_ids = np.array(list(set(self.i2v.keys()).difference([self.v2i["<PAD>"]])))
+
+    def sample(self, n):
+        bi = np.random.randint(0, self.x.shape[0], size=n)
+        bx = self.x[bi]
+        return bx
+
+    @property
+    def num_word(self):
+        return len(self.v2i)
 
 
 class Dataset:
@@ -108,3 +245,15 @@ def process_w2v_data(corpus, skip_window=2, method="skip_gram"):
     else:
         raise ValueError
     return Dataset(x, y, v2i, i2v)
+
+
+def set_soft_gpu(soft_gpu):
+    import tensorflow as tf
+    if soft_gpu:
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            # Currently, memory growth needs to be the same across GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
