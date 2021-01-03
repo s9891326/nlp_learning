@@ -1,6 +1,9 @@
 """tkinter"""
 import tkinter as tk
 import tkinter.messagebox as msg  # messagebox要另行匯入，否則會出錯。
+from icon import img
+import base64
+import os
 
 from PIL import Image
 
@@ -13,7 +16,16 @@ win.title('從零開始學Python：第二件X折？')  # 更改視窗的標題
 win.geometry('800x400')  # 修改視窗大小(寬x高)
 win.resizable(False, False)  # 如果不想讓使用者能調整視窗大小的話就均設為False
 # win.iconbitmap('unicorn.ico')  # 更改左上角的icon圖示
-win.iconphoto(True, tk.PhotoImage(file="./unicorn.png"))
+
+# 原本為讀一個image
+# win.iconphoto(True, tk.PhotoImage(file="./unicorn.png"))
+
+# 更改成讀一個py檔，進行解碼並創建ico
+ico = open("unicorn.ico", "wb+")
+ico.write(base64.b64decode(img))
+ico.close()
+win.iconbitmap("unicorn.ico")
+os.remove("unicorn.ico")
 
 ### Frame fm_cal: 放計算按鈕、"總額"文字label、總額金額顯示label
 fm_cal = tk.Frame(win, bg='skyblue', width=800, height=100)
