@@ -1,0 +1,24 @@
+### day06 bag of words / BOW詞袋
+
+- 文字特徵有兩種處理方式，詞袋 OR word2vec，詞袋比較簡單
+- Bag of word: TFIDF
+- Term frequency/TF
+    - tf = 1 / x.sum(axis=1)[:, None]
+    - x = x * tf 
+    - sklearn.feature_extractin.text.CountVectorizer
+- Inverse Document Frequency/UDF
+    - idf = np.log(x.shape[0]/(x>0),sum(0))
+    - x = x * idf
+    - sklearn.feature_extraction.textTfidfVectorizer
+- Bag of words : N-gram
+    - this is a sentence
+    - n = 1 -> this、is、a、sentence
+    - n = 2 (二元語法) -> this is、is a、a sentence
+    - n = 3 (三元語法) -> this is a、is a sentence
+- 資料預處理
+    - Lowercase
+    - Stemming（字幹搜尋；字幹檢索）: 通常是粗糙的過程，將字的尾巴去掉
+        - ex: automate, automatic, automation -> automat
+    - Lemmatization (詞性還原) : 使用型態分析等方式，將字還原成原始字
+        - ex: am. are, is -> be
+    - Stopwords -> 冠詞和介詞，無意義的詞，也可能是出現多次的詞

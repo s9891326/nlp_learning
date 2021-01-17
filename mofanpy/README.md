@@ -1,10 +1,11 @@
 # 莫凡NLP教學筆記
 
 ## 章節
-* [TF-IDF](tf-idf)
-* [詞向量](詞向量)
-* [CBOW](continuous bag-of-word)
-* [TF-IDF](TF-IDF)
+* [TF-IDF](#tf-idf)
+* [詞向量](#詞向量)
+* [CBOW](#continuous bag-of-word)
+* [TF-IDF](#TF-IDF)
+* [ELMO](#ELMO)
 
 ### TF-IDF(Term Frequency - Inverse Document Frequency)
 * 主要的功能 : 使用詞語的重要程度與獨特性來`代表`每篇文章，然後透過對比`搜索詞`與`代表`的相似性，給你最相似的文章列表
@@ -66,3 +67,30 @@
     - 同樣是2，但兩個2意思不一樣，一個是房間號碼，一個是數字
     - 有什麼辦法讓模型表達出詞語的不同含意呢?
         - 當然我們還是站在向量的角度，只是這個詞向量的表達如果能考慮到句子上下文的訊息，那麼這個詞向量就能表達詞語在不同句子中的涵義了。 `ELmo`模型中，能探討這做法
+
+## Seq2Seq Attention
+
+## Transformer
+
+## ELMO (Embeddings from Language Models)
+- 目標：找出詞語放在句子中的意思
+- 運用兩個RNN(LSTM)的概念，來計算出詞在句子中代表甚麼意思，透過句向量(一個由前往後，一個由後往前) + 詞向量
+
+```
+step:  0 | time: 1.52 | loss: 9.463
+| tgt:  <GO> hovan , a resident of trumbull , conn . , had worked as a bus driver since <NUM> and had no prior criminal record . <SEP>
+| f_prd:  atsb knew knew competition competition competition competition markup floors festivals merit merit merit korkuc korkuc korkuc fingerprinting grade grade car car nicky roush thoughts roush gain gain
+| b_prd:  stockwell stockwell stockwell mta mta mta mta mta mta mta tornadoes tornadoes tornadoes router router halliburton halliburton talked engaged ona db2 life rashid rashid ursel ursel
+
+step:  9920 | time: 8.36 | loss: 0.543
+| tgt:  <GO> of personal vehicles , <NUM> percent are cars or station wagons , <NUM> percent vans or suvs , <NUM> percent light trucks . <SEP>
+| f_prd:  the the vehicles , <NUM> percent are cars or station wagons , <NUM> percent vans or suvs , <NUM> percent light trucks . <SEP>
+| b_prd:  <GO> of personal vehicles , <NUM> percent are cars or station wagons , <NUM> percent vans or suvs , <NUM> percent light <NUM> .
+```
+
+## GPT
+
+## BERT
+
+##
+

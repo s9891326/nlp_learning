@@ -1,0 +1,17 @@
+### day 25 static vs dynamic inference(predict)
+- Offline(static) inference: 預測我們所有已知的資料
+    - 好處
+        - 不用擔心預測所需的cost
+        - 可能可以用MapReduce處理
+        - 發布前可以先驗證預測的正確性
+        - 速度比online快；而且可以在發布前先檢查正確性
+    - 壞處
+        - 只能預測我們知道的事情(bad for long tail)
+        - 有Latency，要花很多時間update
+- Online(dynamic) inference: 需要時才開始預測
+    - 好處
+        - 能預測新的事物(great for long tail)
+        - 可以預測所有可能的item；但我們也需要很仔細地監控資料。
+    - 壞處
+        - 密集運算又對Latency敏感，會限制model複雜度
+        - 需要Monitor data
