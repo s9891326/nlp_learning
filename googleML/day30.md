@@ -1,0 +1,25 @@
+# 總結
+- https://ithelp.ithome.com.tw/articles/10206590
+- 暖身開始
+    - DAY01-02
+- ML簡介
+    - DAY03-04
+- 頭痛一點的數學
+    - DAY05-06
+- 熟悉接下來會頻繁使用的工具TensorFlow
+    - DAY07-08
+- 探討資料與training
+    - DAY09-13
+- 踏入Classification
+    - DAY14-17
+- Neural Network
+    - DAY18-23
+- Last but not least
+    - DAY24-29
+- 未能涵蓋之處
+    - [Problem training](https://developers.google.com/machine-learning/problem-framing/framing)
+        - 一步一步塑形出ML問題的步驟，包含可能會遇到哪些問題、要如何定義問題等等。
+    - [Data Preparation and Feature Engineering](https://developers.google.com/machine-learning/data-prep/)
+        - 如何建構你的data，如何轉換你的data。這邊有點類似培養你對data的敏感度，怎樣的data該如何利用，到時候一看到data就可以直接連結該如何檢查、監控、使用。
+    - [Rule of ML](https://developers.google.com/machine-learning/guides/rules-of-ml/)
+        - 可以算是Google列出的經驗法則，在每個階段的經驗法則，好讓我們不要深陷其中而不自覺。
