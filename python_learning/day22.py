@@ -1,11 +1,9 @@
 """tkinter"""
 import tkinter as tk
 import tkinter.messagebox as msg  # messagebox要另行匯入，否則會出錯。
-from icon import img
+from other.icon import img
 import base64
 import os
-
-from PIL import Image
 
 # img = Image.open("unicorn.png")
 # img.save("unicorn.ico")
